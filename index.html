@@ -144,6 +144,30 @@ main{ max-width:920px; margin:0 auto; padding: 28px 18px 80px; }
   font-family:inherit; font-size:12px; padding:5px 8px; border:1px solid var(--rule);
   background:#fff8ea; color:var(--ink);
 }
+
+/* ====== Recruit notice ====== */
+.recruit-notice{
+  position:relative; background:#fbf6e9; border:2px dashed var(--ink);
+  padding:18px 20px 16px; margin-bottom:30px; overflow:hidden;
+}
+.recruit-notice::before{
+  content:"募集"; position:absolute; top:-14px; right:-14px;
+  width:70px; height:70px; border-radius:50%; border:3px solid var(--red);
+  color:var(--red); display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mincho); font-weight:700; font-size:16px;
+  transform:rotate(12deg); opacity:.85; mix-blend-mode:multiply; letter-spacing:.05em;
+}
+.recruit-notice h2{
+  font-family:var(--font-head); font-size:19px; margin:0 0 10px; padding-right:50px;
+}
+.recruit-notice p{ font-size:13px; margin:0 0 10px; color:var(--ink-soft); }
+.recruit-notice ul{ margin:0 0 12px; padding-left:20px; font-size:13px; }
+.recruit-notice li{ margin-bottom:5px; }
+.recruit-notice li.option::marker{ color:var(--ink-soft); }
+.recruit-contact{
+  display:inline-block; font-size:13px; font-weight:700; background:#fff8ea;
+  border:1px solid var(--ink); padding:8px 14px; margin-top:4px;
+}
 #latestCommentsLabel{ margin-top:46px; }
 #latestCommentsList .comment{ background:#fbf6e9; border:1px solid var(--rule); border-left:4px solid var(--ink); padding:10px 14px; margin-bottom:10px; border-bottom-style:solid; }
 #latestCommentsList .comment .cmeta a{ color:var(--red-deep); font-weight:700; }
@@ -273,6 +297,20 @@ footer a{ border-bottom:1px dotted var(--ink-soft); }
 
 <main>
   <section id="view-home" class="view">
+    <div class="recruit-notice">
+      <h2>編集者・ネタ募集のお知らせ</h2>
+      <p>N³編集部では、一緒にサイトを運営してくれる「編集者」と、記事のもとになる「ネタ（噂話）」を募集しています。興味がある人は気軽にご連絡ください。</p>
+      <p><strong>【編集者募集要項】</strong></p>
+      <ul>
+        <li>編集者メンバーの情報を外部に漏らさないこと</li>
+        <li>人の噂を流すことに抵抗がないこと</li>
+        <li class="option">（できれば）噂に詳しいこと</li>
+        <li class="option">（できれば）文章を書くのが得意なこと</li>
+      </ul>
+      <p>ネタ提供だけでも大歓迎です。「これ記事にしてほしい」という噂があれば、ぜひ教えてください。</p>
+      <div class="recruit-contact">連絡先：公式Instagramアカウントの DM（ダイレクトメッセージ）まで</div>
+    </div>
+
     <div class="home-list-header">
       <div class="section-label">噂一覧</div>
       <div class="sort-control">
