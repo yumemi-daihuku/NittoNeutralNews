@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N³ | NittoNeutralNews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Old+Mincho:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f1e9d8;
+  --paper-2:#e9dec5;
+  --ink:#201a14;
+  --ink-soft:#4a4036;
+  --red:#b3251e;
+  --red-deep:#7e160f;
+  --green:#2f5d3a;
+  --rule:#cdbf9e;
+  --shadow: rgba(32,26,20,.18);
+  --font-head:'Shippori Mincho B1', serif;
+  --font-mincho:'Zen Old Mincho', serif;
+  --font-body:'Zen Kaku Gothic New', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle, rgba(32,26,20,.05) 0.6px, transparent 0.6px),
+    repeating-linear-gradient(0deg, rgba(32,26,20,.025) 0px, rgba(32,26,20,.025) 1px, transparent 1px, transparent 3px);
+  background-size: 5px 5px, auto;
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.85;
+  min-height:100vh;
+}
+a{color:inherit; text-decoration:none;}
+button{font-family:inherit; cursor:pointer;}
+.hidden{display:none !important;}
+
+/* ====== Masthead ====== */
+#masthead{
+  position:relative;
+  padding: 22px 18px 0;
+  border-bottom: 6px double var(--ink);
+  background: var(--paper);
+}
+.masthead-top{
+  display:flex; justify-content:space-between; align-items:baseline;
+  max-width:920px; margin:0 auto; padding-bottom:10px;
+  font-family: var(--font-mincho);
+  font-size: 11px; letter-spacing:.12em; color: var(--ink-soft);
+}
+.masthead-main{
+  max-width:920px; margin:0 auto; padding:6px 0 16px;
+  display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  position:relative;
+}
+.logo-block h1{
+  font-family: var(--font-head);
+  font-weight:800;
+  font-size: clamp(40px, 8vw, 64px);
+  margin:0; letter-spacing:.02em;
+  line-height:1;
+}
+.logo-block .sub{
+  font-size:12px; letter-spacing:.25em; color:var(--ink-soft); margin-top:4px;
+}
+.stamp{
+  position:absolute; top:-6px; right:6px;
+  transform: rotate(-9deg);
+  border:3px solid var(--red); color:var(--red);
+  padding:6px 12px; font-family:var(--font-mincho); font-weight:700;
+  font-size:13px; letter-spacing:.15em; border-radius:4px;
+  opacity:.85; pointer-events:none;
+  mix-blend-mode:multiply;
+}
+nav#mainnav{
+  max-width:920px; margin:0 auto; display:flex; align-items:center;
+  gap:18px; padding:10px 0 14px; border-top:1px solid var(--rule);
+  flex-wrap:wrap; font-size:13px;
+}
+nav#mainnav .navlink{ padding:4px 2px; border-bottom:2px solid transparent; }
+nav#mainnav .navlink:hover{ border-bottom-color:var(--ink); }
+#searchbox{
+  margin-left:auto; display:flex; align-items:center; gap:6px;
+  background:#fff8ea; border:1px solid var(--rule); border-radius:3px;
+  padding:5px 10px;
+}
+#searchbox input{
+  border:none; background:transparent; outline:none; font-family:inherit;
+  font-size:13px; width:160px; color:var(--ink);
+}
+#adminToggle{
+  border:1px solid var(--ink); background:var(--ink); color:var(--paper);
+  padding:6px 12px; font-size:12px; letter-spacing:.08em; border-radius:2px;
+}
+#adminToggle.logged{ background:var(--red); border-color:var(--red); }
+
+/* ====== Main layout ====== */
+main{ max-width:920px; margin:0 auto; padding: 28px 18px 80px; }
+.view{ animation: fadein .25s ease; }
+@keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+.section-label{
+  font-family: var(--font-mincho); font-size:13px; letter-spacing:.3em;
+  color: var(--red-deep); border-bottom:2px solid var(--ink); display:inline-block;
+  padding-bottom:4px; margin-bottom:18px;
+}
+
+/* ====== Article cards (list) ====== */
+.card{
+  position:relative; background:#fbf6e9;
+  border:1px solid var(--rule); border-left:5px solid var(--ink);
+  padding:16px 18px 14px; margin-bottom:18px; box-shadow:3px 4px 0 var(--shadow);
+}
+.card-head{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.card h2{
+  font-family:var(--font-head); font-size:22px; margin:0 0 6px; line-height:1.35;
+}
+.card h2 a:hover{ text-decoration:underline; text-decoration-color:var(--red); }
+.card .meta{ font-size:11px; color:var(--ink-soft); letter-spacing:.05em; }
+.card .excerpt{ font-size:14px; color:var(--ink-soft); margin-top:8px; }
+.score-pill{
+  flex-shrink:0; text-align:center; font-family:var(--font-mincho);
+  border:1px solid var(--ink); border-radius:3px; padding:4px 10px; min-width:54px;
+  background:#fff;
+}
+.score-pill .num{ font-size:20px; font-weight:700; display:block; }
+.score-pill .lbl{ font-size:9px; letter-spacing:.1em; color:var(--ink-soft); }
+.score-pos .num{ color:var(--green); }
+.score-neg .num{ color:var(--red); }
+
+#noResults, #loadingArticles{ color:var(--ink-soft); font-size:14px; padding:20px 0; }
+
+/* ====== Article view ====== */
+.article-header{ border-bottom:3px double var(--ink); padding-bottom:14px; margin-bottom:18px; }
+.article-header .meta{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+.article-header h1{
+  font-family:var(--font-head); font-size: clamp(26px,5vw,38px); margin:0 0 10px; line-height:1.3;
+}
+.cred-box{
+  display:flex; align-items:center; gap:10px; margin-top:12px;
+  border:1px solid var(--ink); padding:8px 14px; width:fit-content; background:#fff8ea;
+}
+.cred-box .score-num{ font-family:var(--font-mincho); font-size:26px; font-weight:700; min-width:36px; text-align:center;}
+.cred-box .cred-label{ font-size:10px; letter-spacing:.1em; color:var(--ink-soft); }
+.vote-btn{
+  width:34px; height:34px; border-radius:50%; border:2px solid var(--ink);
+  background:#fff; font-size:17px; font-weight:700; line-height:1;
+  display:flex; align-items:center; justify-content:center; transition:.15s;
+}
+.vote-btn:hover:not(:disabled){ background:var(--ink); color:#fff; }
+.vote-btn.up:hover:not(:disabled){ background:var(--green); border-color:var(--green); }
+.vote-btn.down:hover:not(:disabled){ background:var(--red); border-color:var(--red); }
+.vote-btn:disabled{ opacity:.35; cursor:not-allowed; }
+.vote-btn.voted{ border-color:var(--red); color:var(--red); opacity:.7; }
+.vote-hint{ font-size:11px; color:var(--ink-soft); margin-left:4px; }
+
+.admin-actions{ margin-top:10px; display:flex; gap:8px; }
+.btn-mini{ font-size:11px; border:1px solid var(--ink); background:#fff; padding:4px 10px; border-radius:2px; }
+.btn-mini.danger{ border-color:var(--red); color:var(--red); }
+
+.article-body{ font-size:16px; }
+.article-body p{ margin:0 0 1.1em; }
+.article-body h2{ font-family:var(--font-head); font-size:24px; border-bottom:2px solid var(--ink); padding-bottom:6px; margin:1.6em 0 .8em; }
+.article-body strong{ color:var(--red-deep); }
+.boten{ -webkit-text-emphasis-style: dot; text-emphasis-style: dot; -webkit-text-emphasis-position: over right; text-emphasis-position: over right; font-weight:600; }
+.linklive{ color:#1d4d8c; border-bottom:1px dotted #1d4d8c; }
+.linkdead{ color:var(--red); border-bottom:1px dotted var(--red); }
+.linkext{ color:var(--green); border-bottom:1px dotted var(--green); }
+sup.fnref a{ color:var(--red-deep); font-weight:700; }
+
+.footnotes{ margin-top:32px; border-top:1px solid var(--rule); padding-top:14px; font-size:13px; color:var(--ink-soft); }
+.footnotes h3{ font-family:var(--font-mincho); font-size:13px; letter-spacing:.2em; margin:0 0 8px; }
+.footnotes ol{ padding-left:20px; }
+.footnotes li{ margin-bottom:4px; }
+
+/* ====== Comments ====== */
+.comments{ margin-top:42px; border-top:6px double var(--ink); padding-top:18px; }
+.comment{ border-bottom:1px dashed var(--rule); padding:10px 0; }
+.comment .cmeta{ font-size:11px; color:var(--ink-soft); margin-bottom:4px; }
+.comment .cname{ font-weight:700; color:var(--ink); }
+.comment .ctext{ font-size:14px; white-space:pre-wrap; }
+#commentForm{ margin-top:18px; display:flex; flex-direction:column; gap:8px; }
+#commentForm input, #commentForm textarea{
+  font-family:inherit; font-size:13px; padding:8px 10px; border:1px solid var(--rule);
+  background:#fff8ea; resize:vertical;
+}
+#commentForm button{ align-self:flex-start; border:1px solid var(--ink); background:var(--ink); color:var(--paper); padding:8px 18px; font-size:13px; letter-spacing:.05em; }
+#noComments{ color:var(--ink-soft); font-size:13px; }
+
+/* ====== Edit / New form ====== */
+#editForm{ display:flex; flex-direction:column; gap:10px; }
+#editForm label{ font-size:12px; letter-spacing:.1em; color:var(--ink-soft); }
+#editForm input[type=text]{ font-size:18px; font-family:var(--font-head); padding:10px 12px; border:1px solid var(--rule); background:#fff8ea; }
+#editForm textarea{ font-family:'Courier New', monospace; font-size:14px; min-height:380px; padding:12px; border:1px solid var(--rule); background:#fffdf6; line-height:1.7; }
+.syntax-help{ font-size:12px; color:var(--ink-soft); background:#fff8ea; border:1px solid var(--rule); padding:10px 14px; }
+.syntax-help code{ background:#efe4cc; padding:1px 5px; border-radius:2px; }
+#editForm .row{ display:flex; gap:10px; }
+.btn-main{ border:1px solid var(--ink); background:var(--ink); color:var(--paper); padding:10px 22px; font-size:14px; letter-spacing:.08em; }
+.btn-secondary{ border:1px solid var(--rule); background:#fff; padding:10px 22px; font-size:14px; }
+
+/* ====== Terms ====== */
+.terms-body h2{ font-family:var(--font-head); font-size:18px; margin-top:1.6em; }
+.terms-body{ font-size:14px; }
+.callout{
+  border:2px solid var(--red); background:#fbeceb; color:var(--red-deep);
+  padding:14px 16px; font-weight:700; margin: 14px 0 22px; font-size:14px;
+}
+
+/* ====== Modal ====== */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(20,16,10,.55); display:flex;
+  align-items:center; justify-content:center; z-index:50; padding:20px;
+}
+.modal-box{
+  background:var(--paper); border:1px solid var(--ink); padding:26px 28px; max-width:340px; width:100%;
+  box-shadow:6px 6px 0 var(--shadow);
+}
+.modal-box h3{ font-family:var(--font-head); font-size:19px; margin:0 0 12px; }
+.modal-box input{ width:100%; padding:9px 10px; font-size:14px; border:1px solid var(--rule); margin-bottom:10px; background:#fff8ea; }
+.modal-box .err{ color:var(--red); font-size:12px; margin:-4px 0 10px; min-height:14px; }
+.modal-actions{ display:flex; gap:8px; justify-content:flex-end; }
+
+footer{
+  text-align:center; font-size:11px; color:var(--ink-soft); padding:30px 0 50px;
+  letter-spacing:.08em;
+}
+footer a{ border-bottom:1px dotted var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header id="masthead">
+  <div class="masthead-top">
+    <span id="todayDate">—</span>
+    <span>日進東中学校 校内非公式メディア</span>
+  </div>
+  <div class="masthead-main">
+    <div class="logo-block">
+      <h1>N<sup style="font-size:.5em;">3</sup></h1>
+      <div class="sub">NittoNeutralNews — 噂は噂、真偽は読者が決める。</div>
+    </div>
+    <div class="stamp">未確認情報</div>
+  </div>
+  <nav id="mainnav">
+    <a class="navlink" href="#">トップ</a>
+    <a class="navlink" href="#terms">利用規約</a>
+    <div id="searchbox">
+      <span>🔍</span>
+      <input id="searchInput" type="text" placeholder="記事を検索...">
+    </div>
+    <button id="adminToggle">編集部ログイン</button>
+  </nav>
+</header>
+
+<main>
+  <section id="view-home" class="view">
+    <div class="section-label">最新の噂</div>
+    <div id="homeList"></div>
+  </section>
+
+  <section id="view-article" class="view hidden">
+    <div id="articleRoot"></div>
+  </section>
+
+  <section id="view-edit" class="view hidden">
+    <div class="section-label" id="editLabel">新規記事</div>
+    <div class="syntax-help">
+      記法ガイド：内部リンク <code>[[記事名/表示文字]]</code>　外部リンク <code>[https://example.com 表示文字]</code>　大見出し <code>--見出し--</code>　太字 <code>**太字**</code>　圏点 <code>`圏点`</code>　脚注 <code>文字&lt;脚注内容&gt;</code>　段落は空行で区切る
+    </div>
+    <form id="editForm">
+      <label>記事タイトル</label>
+      <input type="text" id="editTitle" placeholder="例：3年A組の〇〇先輩が…">
+      <label>本文</label>
+      <textarea id="editBody" placeholder="--見出し--&#10;&#10;本文をここに書く。**強調**したい部分や `圏点` 、脚注<補足説明>なども使えます。&#10;&#10;[[関連記事タイトル/関連記事へ]]"></textarea>
+      <div class="row">
+        <button type="submit" class="btn-main" id="editSaveBtn">保存する</button>
+        <button type="button" class="btn-secondary" id="editCancelBtn">キャンセル</button>
+        <button type="button" class="btn-mini danger hidden" id="editDeleteBtn" style="margin-left:auto;">この記事を削除</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="view-terms" class="view hidden">
+    <div class="section-label">利用規約</div>
+    <div class="terms-body">
+      <div class="callout">
+        本サイトに掲載される内容は、あくまでも学内で囁かれている「噂程度」の情報です。事実確認・取材は行っておらず、真偽は保証されません。記事の内容を事実と決めつけて他者に伝える行為は絶対にやめてください。
+      </div>
+      <h2>第1条（本サイトの性質）</h2>
+      <p>N³（NittoNeutralNews）は、日進東中学校内で語られている噂・うわさ話・都市伝説的な話題を収集・掲載する非公式の読み物サイトです。掲載内容は投稿者・編集者の主観や伝聞に基づくものであり、報道機関による事実確認を経たものではありません。</p>
+      <h2>第2条（信頼度評価について）</h2>
+      <p>各記事には閲覧者が信ぴょう性を評価できる「＋／－」ボタンを設置しています。この評価はあくまで読者の印象・感覚を集計した参考値であり、事実かどうかを判定するものではありません。数値が高い記事であっても内容が事実であることを意味しません。</p>
+      <h2>第3条（コメントについて）</h2>
+      <p>コメントは自由に投稿できますが、特定の個人を著しく誹謗中傷する内容、個人情報の特定につながる内容、事実と異なる内容を事実であるかのように断定する投稿は禁止します。違反するコメント・記事は編集部の判断で削除することがあります。</p>
+      <h2>第4条（免責事項）</h2>
+      <p>本サイトの内容を利用したことにより生じたいかなる損害・トラブルについても、運営者は責任を負いません。記事や噂を引用・拡散する際は、それが未確認の噂であることを必ず明示してください。</p>
+      <h2>第5条（規約の変更）</h2>
+      <p>本規約は予告なく変更されることがあります。サイトを利用した時点で、その時点の規約に同意したものとみなします。</p>
+    </div>
+  </section>
+</main>
+
+<div id="adminModalOverlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3>編集部ログイン</h3>
+    <input type="password" id="adminPassInput" placeholder="編集用パスワード">
+    <div class="err" id="adminErr"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="adminCancelBtn" type="button">閉じる</button>
+      <button class="btn-main" id="adminLoginBtn" type="button">ログイン</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  N³ NittoNeutralNews — 噂は噂、真偽は読者が決める。 ｜ <a href="#terms">利用規約</a>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+import {
+  getDatabase, ref, push, set, update, remove, onValue, runTransaction, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDtNV0XLNmPaLlvD5xX026QBJgDMpTBmcA",
+  authDomain: "nittoneutralnews.firebaseapp.com",
+  projectId: "nittoneutralnews",
+  storageBucket: "nittoneutralnews.firebasestorage.app",
+  messagingSenderId: "592336435666",
+  appId: "1:592336435666:web:9eade4b9451f4ad866f00b",
+  measurementId: "G-XVCE9D44T7"
+};
+
+const app = initializeApp(firebaseConfig);
+try { getAnalytics(app); } catch (e) { /* analytics may fail to load in some envs; ignore */ }
+const db = getDatabase(app);
+const articlesRef = ref(db, "articles");
+
+const ADMIN_PASSWORD = "NNNrep0rter";
+let isAdmin = sessionStorage.getItem("nnn_admin") === "1";
+
+let articles = {}; // id -> {title, body, score, createdAt, updatedAt}
+let titleToId = {};
+let dataLoaded = false;
+
+onValue(articlesRef, (snap) => {
+  articles = snap.val() || {};
+  titleToId = {};
+  Object.keys(articles).forEach(id => {
+    const t = (articles[id].title || "").trim();
+    if (t && !(t in titleToId)) titleToId[t] = id;
+  });
+  dataLoaded = true;
+  route();
+});
+
+/* ---------------- Utilities ---------------- */
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function fmtDate(ts){
+  if (!ts) return "日時不明";
+  const d = new Date(ts);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+function stripMarkupForExcerpt(body){
+  return (body || "")
+    .replace(/\[\[([^\]\/]+)(?:\/([^\]]+))?\]\]/g, (m,a,b) => b || a)
+    .replace(/\[(https?:\/\/[^\s\]]+)\s+([^\]]+?)\]/g, "$2")
+    .replace(/--(.+?)--/g, "$1")
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/`(.+?)`/g, "$1")
+    .replace(/([^\s]+?)<([^<>]*?)>/g, "$1")
+    .replace(/\n+/g, " ")
+    .trim();
+}
+
+/* ---------------- Wiki markup parser ---------------- */
+function parseBody(raw){
+  if (!raw) return { html: "", footnotes: [] };
+  let text = escapeHtml(raw);
+  const footnotes = [];
+
+  // 1. footnotes:  word&lt;content&gt;  ->  word + sup ref
+  text = text.replace(/([^\s]+?)&lt;([^&]*?)&gt;/g, (m, word, content) => {
+    footnotes.push(content);
+    const idx = footnotes.length;
+    return `${word}<sup class="fnref" id="fnref-${idx}"><a href="#fn-${idx}">[${idx}]</a></sup>`;
+  });
+
+  // 2. external links: [https://... label]
+  text = text.replace(/\[(https?:\/\/[^\s\]]+)\s+([^\]]+?)\]/g, (m, url, label) => {
+    return `<a class="linkext" href="${url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`;
+  });
+
+  // 3. internal links: [[title]] or [[title/label]]
+  text = text.replace(/\[\[([^\]\/]+)(?:\/([^\]]+))?\]\]/g, (m, title, label) => {
+    const t = title.trim();
+    const display = (label !== undefined ? label : t);
+    const id = titleToId[t];
+    if (id) {
+      return `<a class="linklive" href="#a-${id}">${display}</a>`;
+    }
+    return `<a class="linkdead" href="#new?title=${encodeURIComponent(t)}" title="この記事はまだありません">${display}</a>`;
+  });
+
+  // 4. headings --text-- (force own paragraph)
+  text = text.replace(/--(.+?)--/g, "\n\n<h2>$1</h2>\n\n");
+
+  // 5. bold **text**
+  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  // 6. emphasis (boten) `text`
+  text = text.replace(/`(.+?)`/g, '<span class="boten">$1</span>');
+
+  // 7. paragraphs
+  const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  const html = blocks.map(b => {
+    if (/^<h2>/.test(b)) return b;
+    return `<p>${b.replace(/\n/g, "<br>")}</p>`;
+  }).join("\n");
+
+  return { html, footnotes };
+}
+
+function renderFootnotesHtml(footnotes){
+  if (!footnotes.length) return "";
+  const items = footnotes.map((f, i) => {
+    const n = i + 1;
+    return `<li id="fn-${n}">${f} <a href="#fnref-${n}">↩</a></li>`;
+  }).join("");
+  return `<div class="footnotes"><h3>脚注</h3><ol>${items}</ol></div>`;
+}
+
+/* ---------------- Routing ---------------- */
+function currentHash(){ return location.hash || "#"; }
+
+function route(){
+  if (!dataLoaded) return;
+  const hash = currentHash();
+  document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+
+  if (hash === "#" || hash === "" || hash === "#/") {
+    show("view-home"); renderHome();
+  } else if (hash.startsWith("#a-")) {
+    show("view-article"); renderArticle(hash.slice(3));
+  } else if (hash === "#new" || hash.startsWith("#new?")) {
+    if (!requireAdmin()) return;
+    show("view-edit"); renderEditForm(null, hash);
+  } else if (hash.startsWith("#e-")) {
+    if (!requireAdmin()) return;
+    show("view-edit"); renderEditForm(hash.slice(3));
+  } else if (hash === "#terms") {
+    show("view-terms");
+  } else {
+    show("view-home"); renderHome();
+  }
+  window.scrollTo(0,0);
+}
+function show(id){ document.getElementById(id).classList.remove("hidden"); }
+
+function requireAdmin(){
+  if (isAdmin) return true;
+  openAdminModal(() => route());
+  history.replaceState(null, "", "#");
+  return false;
+}
+
+window.addEventListener("hashchange", route);
+
+/* ---------------- Home / list / search ---------------- */
+function getSortedArticles(){
+  return Object.entries(articles)
+    .map(([id, a]) => ({ id, ...a }))
+    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+}
+
+function renderHome(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  let list = getSortedArticles();
+  if (q) {
+    list = list.filter(a =>
+      (a.title||"").toLowerCase().includes(q) || (a.body||"").toLowerCase().includes(q)
+    );
+  }
+  const root = document.getElementById("homeList");
+  if (!list.length) {
+    root.innerHTML = `<div id="noResults">${q ? "該当する記事は見つかりませんでした。" : "まだ記事がありません。"}</div>`;
+    return;
+  }
+  root.innerHTML = list.map(a => {
+    const score = a.score || 0;
+    const scoreClass = score > 0 ? "score-pos" : (score < 0 ? "score-neg" : "");
+    const excerpt = stripMarkupForExcerpt(a.body).slice(0, 90);
+    return `
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2><a href="#a-${a.id}">${escapeHtml(a.title || "(無題)")}</a></h2>
+            <div class="meta">投稿: ${fmtDate(a.createdAt)}${a.updatedAt && a.updatedAt !== a.createdAt ? " ／ 更新: " + fmtDate(a.updatedAt) : ""}</div>
+            <div class="excerpt">${escapeHtml(excerpt)}${excerpt.length >= 90 ? "…" : ""}</div>
+          </div>
+          <div class="score-pill ${scoreClass}">
+            <span class="num">${score > 0 ? "+" + score : score}</span>
+            <span class="lbl">信頼度</span>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", () => {
+  if (currentHash() === "#" || currentHash() === "") renderHome();
+});
+
+/* ---------------- Article view ---------------- */
+function renderArticle(id){
+  const a = articles[id];
+  const root = document.getElementById("articleRoot");
+  if (!a) {
+    root.innerHTML = `<p>指定された記事は見つかりませんでした。<a href="#">トップへ戻る</a></p>`;
+    return;
+  }
+  const { html, footnotes } = parseBody(a.body);
+  const score = a.score || 0;
+  const scoreColor = score > 0 ? "var(--green)" : (score < 0 ? "var(--red)" : "var(--ink)");
+  const votedState = localStorage.getItem(`nnn_vote_${id}`);
+
+  root.innerHTML = `
+    <div class="article-header">
+      <h1>${escapeHtml(a.title || "(無題)")}</h1>
+      <div class="meta">投稿: ${fmtDate(a.createdAt)}${a.updatedAt && a.updatedAt !== a.createdAt ? " ／ 更新: " + fmtDate(a.updatedAt) : ""}</div>
+      <div class="cred-box">
+        <button class="vote-btn up ${votedState==='up'?'voted':''}" id="voteUp" ${votedState?'disabled':''}>＋</button>
+        <span class="score-num" style="color:${scoreColor}">${score > 0 ? "+" + score : score}</span>
+        <button class="vote-btn down ${votedState==='down'?'voted':''}" id="voteDown" ${votedState?'disabled':''}>－</button>
+        <span class="cred-label">信頼度（噂としての確からしさ・読者投票）</span>
+        ${votedState ? `<span class="vote-hint">評価済み</span>` : ""}
+      </div>
+      ${isAdmin ? `<div class="admin-actions">
+        <a class="btn-mini" href="#e-${id}">編集する</a>
+        <button class="btn-mini danger" id="deleteArticleBtn">削除する</button>
+      </div>` : ""}
+    </div>
+    <div class="article-body">${html}</div>
+    ${renderFootnotesHtml(footnotes)}
+    <div class="comments">
+      <div class="section-label">コメント</div>
+      <div id="commentList"></div>
+      <form id="commentForm">
+        <input type="text" id="commentName" placeholder="名前（省略可・未入力は「名無しさん」）" maxlength="20">
+        <textarea id="commentText" rows="3" placeholder="コメントを入力..." maxlength="500"></textarea>
+        <button type="submit">投稿する</button>
+      </form>
+    </div>
+  `;
+
+  document.getElementById("voteUp").addEventListener("click", () => vote(id, 1));
+  document.getElementById("voteDown").addEventListener("click", () => vote(id, -1));
+  if (isAdmin) {
+    document.getElementById("deleteArticleBtn").addEventListener("click", () => {
+      if (confirm("この記事を削除します。よろしいですか？この操作は取り消せません。")) {
+        remove(ref(db, `articles/${id}`));
+        remove(ref(db, `comments/${id}`));
+        location.hash = "#";
+      }
+    });
+  }
+
+  loadComments(id);
+  document.getElementById("commentForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitComment(id);
+  });
+}
+
+function vote(id, delta){
+  const key = `nnn_vote_${id}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, delta > 0 ? "up" : "down");
+  const scoreRef = ref(db, `articles/${id}/score`);
+  runTransaction(scoreRef, (current) => (current || 0) + delta);
+}
+
+function loadComments(articleId){
+  const commentsRef = ref(db, `comments/${articleId}`);
+  onValue(commentsRef, (snap) => {
+    // only re-render comment list if we're still viewing this article
+    if (currentHash() !== `#a-${articleId}`) return;
+    const data = snap.val() || {};
+    const list = Object.values(data).sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
+    const el = document.getElementById("commentList");
+    if (!el) return;
+    if (!list.length) {
+      el.innerHTML = `<div id="noComments">まだコメントはありません。最初のコメントを投稿してみましょう。</div>`;
+      return;
+    }
+    el.innerHTML = list.map(c => `
+      <div class="comment">
+        <div class="cmeta"><span class="cname">${escapeHtml(c.name || "名無しさん")}</span> ・ ${fmtDate(c.createdAt)}</div>
+        <div class="ctext">${escapeHtml(c.text || "")}</div>
+      </div>
+    `).join("");
+  });
+}
+
+function submitComment(articleId){
+  const nameEl = document.getElementById("commentName");
+  const textEl = document.getElementById("commentText");
+  const text = textEl.value.trim();
+  if (!text) return;
+  const name = nameEl.value.trim().slice(0,20) || "名無しさん";
+  const commentsRef = ref(db, `comments/${articleId}`);
+  push(commentsRef, { name, text: text.slice(0,500), createdAt: Date.now() });
+  nameEl.value = "";
+  textEl.value = "";
+}
+
+/* ---------------- Edit / New form ---------------- */
+function renderEditForm(id, hashWithQuery){
+  const titleInput = document.getElementById("editTitle");
+  const bodyInput = document.getElementById("editBody");
+  const label = document.getElementById("editLabel");
+  const deleteBtn = document.getElementById("editDeleteBtn");
+
+  if (id) {
+    const a = articles[id];
+    label.textContent = "記事を編集";
+    titleInput.value = a ? (a.title || "") : "";
+    bodyInput.value = a ? (a.body || "") : "";
+    deleteBtn.classList.remove("hidden");
+    deleteBtn.onclick = () => {
+      if (confirm("この記事を削除します。よろしいですか？")) {
+        remove(ref(db, `articles/${id}`));
+        remove(ref(db, `comments/${id}`));
+        location.hash = "#";
+      }
+    };
+  } else {
+    label.textContent = "新規記事を投稿";
+    titleInput.value = "";
+    bodyInput.value = "";
+    deleteBtn.classList.add("hidden");
+    if (hashWithQuery && hashWithQuery.includes("?title=")) {
+      const t = decodeURIComponent(hashWithQuery.split("?title=")[1] || "");
+      titleInput.value = t;
+    }
+  }
+
+  const form = document.getElementById("editForm");
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const title = titleInput.value.trim();
+    const body = bodyInput.value;
+    if (!title) { alert("タイトルを入力してください。"); return; }
+    if (id) {
+      update(ref(db, `articles/${id}`), { title, body, updatedAt: Date.now() });
+      location.hash = `#a-${id}`;
+    } else {
+      const newRef = push(articlesRef);
+      set(newRef, { title, body, score: 0, createdAt: Date.now(), updatedAt: Date.now() });
+      location.hash = `#a-${newRef.key}`;
+    }
+  };
+  document.getElementById("editCancelBtn").onclick = () => {
+    location.hash = id ? `#a-${id}` : "#";
+  };
+}
+
+/* ---------------- Admin login ---------------- */
+let pendingAdminCallback = null;
+function openAdminModal(onSuccess){
+  pendingAdminCallback = onSuccess || null;
+  document.getElementById("adminErr").textContent = "";
+  document.getElementById("adminPassInput").value = "";
+  document.getElementById("adminModalOverlay").classList.remove("hidden");
+  document.getElementById("adminPassInput").focus();
+}
+function closeAdminModal(){
+  document.getElementById("adminModalOverlay").classList.add("hidden");
+  pendingAdminCallback = null;
+}
+function attemptAdminLogin(){
+  const val = document.getElementById("adminPassInput").value;
+  if (val === ADMIN_PASSWORD) {
+    isAdmin = true;
+    sessionStorage.setItem("nnn_admin", "1");
+    updateAdminUI();
+    closeAdminModal();
+    if (pendingAdminCallback) pendingAdminCallback();
+    else route();
+  } else {
+    document.getElementById("adminErr").textContent = "パスワードが正しくありません。";
+  }
+}
+document.getElementById("adminLoginBtn").addEventListener("click", attemptAdminLogin);
+document.getElementById("adminPassInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") attemptAdminLogin();
+});
+document.getElementById("adminCancelBtn").addEventListener("click", closeAdminModal);
+
+function updateAdminUI(){
+  const btn = document.getElementById("adminToggle");
+  if (isAdmin) {
+    btn.textContent = "編集部：ログイン中（クリックでログアウト）";
+    btn.classList.add("logged");
+  } else {
+    btn.textContent = "編集部ログイン";
+    btn.classList.remove("logged");
+  }
+}
+document.getElementById("adminToggle").addEventListener("click", () => {
+  if (isAdmin) {
+    if (confirm("ログアウトしますか？")) {
+      isAdmin = false;
+      sessionStorage.removeItem("nnn_admin");
+      updateAdminUI();
+      route();
+    }
+  } else {
+    openAdminModal(null);
+  }
+});
+
+/* ---------------- New article shortcut ---------------- */
+// Add a quick "新規投稿" nav link dynamically when admin is logged in
+function injectNewArticleLink(){
+  const nav = document.getElementById("mainnav");
+  let existing = document.getElementById("newArticleLink");
+  if (isAdmin && !existing) {
+    const a = document.createElement("a");
+    a.id = "newArticleLink";
+    a.className = "navlink";
+    a.href = "#new";
+    a.textContent = "新規投稿";
+    nav.insertBefore(a, document.getElementById("searchbox"));
+  } else if (!isAdmin && existing) {
+    existing.remove();
+  }
+}
+const _origUpdateAdminUI = updateAdminUI;
+updateAdminUI = function(){ _origUpdateAdminUI(); injectNewArticleLink(); };
+
+/* ---------------- Init ---------------- */
+document.getElementById("todayDate").textContent = new Date().toLocaleDateString("ja-JP", { year:"numeric", month:"long", day:"numeric", weekday:"short" });
+updateAdminUI();
+route();
+</script>
+</body>
+</html>
