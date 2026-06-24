@@ -134,6 +134,21 @@ main{ max-width:920px; margin:0 auto; padding: 28px 18px 80px; }
 
 #noResults, #loadingArticles{ color:var(--ink-soft); font-size:14px; padding:20px 0; }
 
+.home-list-header{
+  display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.home-list-header .section-label{ margin-bottom:0; }
+.sort-control{ font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+.sort-control select{
+  font-family:inherit; font-size:12px; padding:5px 8px; border:1px solid var(--rule);
+  background:#fff8ea; color:var(--ink);
+}
+#latestCommentsLabel{ margin-top:46px; }
+#latestCommentsList .comment{ background:#fbf6e9; border:1px solid var(--rule); border-left:4px solid var(--ink); padding:10px 14px; margin-bottom:10px; border-bottom-style:solid; }
+#latestCommentsList .comment .cmeta a{ color:var(--red-deep); font-weight:700; }
+#noComments{ color:var(--ink-soft); font-size:13px; }
+
 /* ====== Article view ====== */
 .article-header{ border-bottom:3px double var(--ink); padding-bottom:14px; margin-bottom:18px; }
 .article-header .meta{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
@@ -151,12 +166,12 @@ main{ max-width:920px; margin:0 auto; padding: 28px 18px 80px; }
   background:#fff; font-size:17px; font-weight:700; line-height:1;
   display:flex; align-items:center; justify-content:center; transition:.15s;
 }
-.vote-btn:hover:not(:disabled){ background:var(--ink); color:#fff; }
-.vote-btn.up:hover:not(:disabled){ background:var(--green); border-color:var(--green); }
-.vote-btn.down:hover:not(:disabled){ background:var(--red); border-color:var(--red); }
-.vote-btn:disabled{ opacity:.35; cursor:not-allowed; }
-.vote-btn.voted{ border-color:var(--red); color:var(--red); opacity:.7; }
-.vote-hint{ font-size:11px; color:var(--ink-soft); margin-left:4px; }
+.vote-btn:hover{ background:var(--ink); color:#fff; }
+.vote-btn.up:hover{ background:var(--green); border-color:var(--green); }
+.vote-btn.down:hover{ background:var(--red); border-color:var(--red); }
+.vote-btn.up.voted-active{ background:var(--green); border-color:var(--green); color:#fff; }
+.vote-btn.down.voted-active{ background:var(--red); border-color:var(--red); color:#fff; }
+.vote-hint{ font-size:11px; color:var(--ink-soft); margin-top:6px; }
 
 .admin-actions{ margin-top:10px; display:flex; gap:8px; }
 .btn-mini{ font-size:11px; border:1px solid var(--ink); background:#fff; padding:4px 10px; border-radius:2px; }
@@ -258,8 +273,23 @@ footer a{ border-bottom:1px dotted var(--ink-soft); }
 
 <main>
   <section id="view-home" class="view">
-    <div class="section-label">最新の噂</div>
+    <div class="home-list-header">
+      <div class="section-label">噂一覧</div>
+      <div class="sort-control">
+        <label for="sortSelect">並び替え：</label>
+        <select id="sortSelect">
+          <option value="new">新しい順</option>
+          <option value="old">古い順</option>
+          <option value="kana">五十音順</option>
+          <option value="score_desc">評価が高い順</option>
+          <option value="score_asc">評価が低い順</option>
+        </select>
+      </div>
+    </div>
     <div id="homeList"></div>
+
+    <div class="section-label" id="latestCommentsLabel">最新のコメント</div>
+    <div id="latestCommentsList"></div>
   </section>
 
   <section id="view-article" class="view hidden">
@@ -358,6 +388,21 @@ onValue(articlesRef, (snap) => {
   });
   dataLoaded = true;
   route();
+});
+
+// サイト全体の「最新のコメント」欄用：全記事のコメントをまとめて監視
+let allCommentsFlat = [];
+onValue(ref(db, "comments"), (snap) => {
+  const data = snap.val() || {};
+  const flat = [];
+  Object.keys(data).forEach(articleId => {
+    Object.values(data[articleId] || {}).forEach(c => {
+      flat.push({ articleId, ...c });
+    });
+  });
+  flat.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  allCommentsFlat = flat;
+  if (dataLoaded && (currentHash() === "#" || currentHash() === "")) renderLatestComments();
 });
 
 /* ---------------- Utilities ---------------- */
@@ -482,15 +527,33 @@ function requireAdmin(){
 window.addEventListener("hashchange", route);
 
 /* ---------------- Home / list / search ---------------- */
-function getSortedArticles(){
-  return Object.entries(articles)
-    .map(([id, a]) => ({ id, ...a }))
-    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+function getSortedArticles(sortKey){
+  const list = Object.entries(articles).map(([id, a]) => ({ id, ...a }));
+  switch (sortKey) {
+    case "old":
+      list.sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
+      break;
+    case "kana":
+      list.sort((a,b) => (a.title||"").localeCompare((b.title||""), "ja"));
+      break;
+    case "score_desc":
+      list.sort((a,b) => (b.score||0) - (a.score||0));
+      break;
+    case "score_asc":
+      list.sort((a,b) => (a.score||0) - (b.score||0));
+      break;
+    case "new":
+    default:
+      list.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+      break;
+  }
+  return list;
 }
 
 function renderHome(){
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
-  let list = getSortedArticles();
+  const sortKey = document.getElementById("sortSelect").value;
+  let list = getSortedArticles(sortKey);
   if (q) {
     list = list.filter(a =>
       (a.title||"").toLowerCase().includes(q) || (a.body||"").toLowerCase().includes(q)
@@ -499,6 +562,7 @@ function renderHome(){
   const root = document.getElementById("homeList");
   if (!list.length) {
     root.innerHTML = `<div id="noResults">${q ? "該当する記事は見つかりませんでした。" : "まだ記事がありません。"}</div>`;
+    renderLatestComments();
     return;
   }
   root.innerHTML = list.map(a => {
@@ -520,11 +584,38 @@ function renderHome(){
         </div>
       </div>`;
   }).join("");
+  renderLatestComments();
 }
 
 document.getElementById("searchInput").addEventListener("input", () => {
   if (currentHash() === "#" || currentHash() === "") renderHome();
 });
+document.getElementById("sortSelect").addEventListener("change", () => {
+  if (currentHash() === "#" || currentHash() === "") renderHome();
+});
+
+/* ---------------- 最新のコメント（サイト全体） ---------------- */
+function renderLatestComments(){
+  const el = document.getElementById("latestCommentsList");
+  if (!el) return;
+  const list = allCommentsFlat.slice(0, 12);
+  if (!list.length) {
+    el.innerHTML = `<div id="noComments">まだコメントはありません。</div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const art = articles[c.articleId];
+    const title = art ? (art.title || "(無題)") : "(削除された記事)";
+    return `
+      <div class="comment">
+        <div class="cmeta">
+          <span class="cname">${escapeHtml(c.name || "名無しさん")}</span> ・ ${fmtDate(c.createdAt)} ・
+          <a href="#a-${c.articleId}">「${escapeHtml(title)}」へ</a>
+        </div>
+        <div class="ctext">${escapeHtml(c.text || "")}</div>
+      </div>`;
+  }).join("");
+}
 
 /* ---------------- Article view ---------------- */
 function renderArticle(id){
@@ -544,12 +635,14 @@ function renderArticle(id){
       <h1>${escapeHtml(a.title || "(無題)")}</h1>
       <div class="meta">投稿: ${fmtDate(a.createdAt)}${a.updatedAt && a.updatedAt !== a.createdAt ? " ／ 更新: " + fmtDate(a.updatedAt) : ""}</div>
       <div class="cred-box">
-        <button class="vote-btn up ${votedState==='up'?'voted':''}" id="voteUp" ${votedState?'disabled':''}>＋</button>
+        <button class="vote-btn up ${votedState==='up'?'voted-active':''}" id="voteUp">＋</button>
         <span class="score-num" style="color:${scoreColor}">${score > 0 ? "+" + score : score}</span>
-        <button class="vote-btn down ${votedState==='down'?'voted':''}" id="voteDown" ${votedState?'disabled':''}>－</button>
+        <button class="vote-btn down ${votedState==='down'?'voted-active':''}" id="voteDown">－</button>
         <span class="cred-label">信頼度（噂としての確からしさ・読者投票）</span>
-        ${votedState ? `<span class="vote-hint">評価済み</span>` : ""}
       </div>
+      <div class="vote-hint">${votedState
+        ? `あなたは「${votedState==='up'?'＋':'－'}」を選択中です。もう一度押すと取消、反対側を押すと変更できます。`
+        : `＋／－を押すと評価できます（後から変更・取消も可能です）`}</div>
       ${isAdmin ? `<div class="admin-actions">
         <a class="btn-mini" href="#e-${id}">編集する</a>
         <button class="btn-mini danger" id="deleteArticleBtn">削除する</button>
@@ -568,8 +661,8 @@ function renderArticle(id){
     </div>
   `;
 
-  document.getElementById("voteUp").addEventListener("click", () => vote(id, 1));
-  document.getElementById("voteDown").addEventListener("click", () => vote(id, -1));
+  document.getElementById("voteUp").addEventListener("click", () => vote(id, "up"));
+  document.getElementById("voteDown").addEventListener("click", () => vote(id, "down"));
   if (isAdmin) {
     document.getElementById("deleteArticleBtn").addEventListener("click", () => {
       if (confirm("この記事を削除します。よろしいですか？この操作は取り消せません。")) {
@@ -587,10 +680,28 @@ function renderArticle(id){
   });
 }
 
-function vote(id, delta){
+function vote(id, direction){
+  // direction: "up" または "down"
   const key = `nnn_vote_${id}`;
-  if (localStorage.getItem(key)) return;
-  localStorage.setItem(key, delta > 0 ? "up" : "down");
+  const prev = localStorage.getItem(key); // null | "up" | "down"
+  let delta = 0;
+  let newState = direction;
+
+  if (prev === direction) {
+    // 同じボタンを再度押した → 取消
+    delta = direction === "up" ? -1 : 1;
+    newState = null;
+  } else if (!prev) {
+    // 初めての投票
+    delta = direction === "up" ? 1 : -1;
+  } else {
+    // 反対側へ変更（前の票を打ち消して新しい票を入れるので±2）
+    delta = direction === "up" ? 2 : -2;
+  }
+
+  if (newState) localStorage.setItem(key, newState);
+  else localStorage.removeItem(key);
+
   const scoreRef = ref(db, `articles/${id}/score`);
   runTransaction(scoreRef, (current) => (current || 0) + delta);
 }
